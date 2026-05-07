@@ -121,12 +121,15 @@ func main() {
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
+
 	"github.com/Corey-cloud/xhttp"
 )
 
 func main() {
-
 	// 初始化客户端连接池
 	cli := xhttp.NewXClient(xhttp.XClientConfig{
 		Addr:         "127.0.0.1:9999",
@@ -140,10 +143,39 @@ func main() {
 	cli.StartMonitor()
 	defer cli.StopMonitor()
 
-	// 单向发送数据
-	err := cli.Post("/demo/test", []byte("hello xhttp"))
-	if err != nil {
-		println("发送失败：", err.Error())
+	// 创建 ticker，每 5 秒触发一次
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	// 创建信号通道，监听系统中断信号（Ctrl+C 或 kill）
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// 计数器，用于演示
+	var count int
+
+	// 主循环
+	for {
+		select {
+		case <-ticker.C:
+			// 每 5 秒执行一次
+			count++
+			err := cli.Post("/demo/test", []byte("hello xhttp"))
+			if err != nil {
+				// 失败时打印日志（包含时间戳和计数）
+				println(time.Now().Format("2006-01-02 15:04:05"),
+					"发送失败 [第", count, "次]：", err.Error())
+			} else {
+				println(time.Now().Format("2006-01-02 15:04:05"),
+					"发送成功 [第", count, "次]")
+			}
+
+		case <-sigChan:
+			// 收到退出信号（Ctrl+C 或 kill）
+			println("\n收到退出信号，正在优雅关闭...")
+			println("总共发送次数:", count)
+			return
+		}
 	}
 }
 ```
