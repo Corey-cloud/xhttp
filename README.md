@@ -2,7 +2,6 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.18+-blue.svg)](https://golang.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/xxx/xhttp?style=flat)](https://github.com/xxx/xhttp)
 
 轻量高性能 **纯 TCP 单向私有协议通信框架**  
 
@@ -77,7 +76,7 @@
 # 🚀 安装使用
 
 ```bash
-go get github.com/你的用户名/xhttp
+go get github.com/Corey-cloud/xhttp
 ```
 
 ---
@@ -123,8 +122,7 @@ package main
 
 import (
 	"time"
-
-	"github.com/你的用户名/xhttp"
+	"github.com/Corey-cloud/xhttp"
 )
 
 func main() {
