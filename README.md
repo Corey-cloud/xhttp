@@ -89,7 +89,7 @@ go get github.com/Corey-cloud/xhttp
 package main
 
 import (
-	"github.com/你的用户名/xhttp"
+	"github.com/Corey-cloud/xhttp"
 )
 
 func main() {
