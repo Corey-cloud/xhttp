@@ -143,8 +143,8 @@ func main() {
 	cli.StartMonitor()
 	defer cli.StopMonitor()
 
-	// 创建 ticker，每 5 秒触发一次
-	ticker := time.NewTicker(5 * time.Second)
+	// 创建 ticker，每 1 秒触发一次
+	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
 	// 创建信号通道，监听系统中断信号（Ctrl+C 或 kill）
