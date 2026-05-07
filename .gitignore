@@ -8,6 +8,11 @@
 *.so
 *.dylib
 
+# IDEA 配置文件，不提交到仓库
+.idea/
+*.iml
+*.iws
+*.ipr
 # Test binary, built with `go test -c`
 *.test
 
