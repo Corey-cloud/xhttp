@@ -6,8 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"intelliunion_localDCRS_service/common"
+	"xhttp/common"
 )
 
 func main() {
