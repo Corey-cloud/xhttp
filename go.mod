@@ -1,4 +1,4 @@
-module xhttp
+module github.com/Corey-cloud/xhttp
 
 go 1.20
 
