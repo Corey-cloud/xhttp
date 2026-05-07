@@ -1,19 +1,20 @@
 package main
 
 import (
+	"github.com/Corey-cloud/xhttp"
+	"github.com/Corey-cloud/xhttp/common"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	"xhttp/common"
 )
 
 func main() {
 	common.CheckErr(common.LoadConfig())
 	common.NewLogger()
 	if common.Config.SendEnabled {
-		GlobalXClient = NewXClient(XClientConfig{
+		xhttp.GlobalXClient = xhttp.NewXClient(xhttp.XClientConfig{
 			Addr:         common.Config.ForwardAddr,
 			MaxOpenConns: 5000,
 			MaxIdleConns: 200,
@@ -23,17 +24,17 @@ func main() {
 	}
 	if common.Config.RecvEnabled {
 		go func() {
-			xRouter := NewXRouter()
+			xRouter := xhttp.NewXRouter()
 			xRouter.HandleFunc("/demo/test", func(path string, body []byte) {
 				println("请求路由：", path)
 				println("请求数据：", string(body))
 			})
-			server := NewXServer(common.Config.RecvPort, xRouter)
+			server := xhttp.NewXServer(common.Config.RecvPort, xRouter)
 			_ = server.ListenAndServe()
 		}()
 	}
 	if common.Config.PrintStat {
-		go PrintStat()
+		go xhttp.PrintStat()
 	}
 	// 优雅退出
 	quit := make(chan os.Signal, 1)

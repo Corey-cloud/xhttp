@@ -1,4 +1,4 @@
-package main
+package xhttp
 
 import (
 	"fmt"
