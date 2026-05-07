@@ -1,6 +1,6 @@
 # XHTTP
 
-[![Go Version](https://img.shields.io/badge/Go-1.18+-blue.svg)](https://golang.org)
+[![Go Version](https://img.shields.io/badge/Go-1.20+-blue.svg)](https://golang.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 轻量高性能 **纯 TCP 单向私有协议通信框架**  

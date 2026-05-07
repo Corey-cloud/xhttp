@@ -1,4 +1,4 @@
-package xhttp
+package main
 
 import (
 	"errors"
@@ -191,9 +191,6 @@ func (c *XClient) Post(path string, body []byte) error {
 	for total < len(pkg) {
 		n, err := conn.Write(pkg[total:])
 		if err != nil {
-			// 发送失败，标记连接损坏
-			// 对历史数据做落盘，开个定时程序把没发过去的历史数据慢慢发
-			go SaveFile(path, body)
 			c.putConn(ic, true)
 			return err
 		}

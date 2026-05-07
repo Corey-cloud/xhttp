@@ -1,10 +1,9 @@
-package xhttp
+package common
 
 import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/hertz-contrib/logger/zap"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"intelliunion_localDCRS_service/common"
 	"io"
 	"os"
 	"path/filepath"
@@ -15,8 +14,8 @@ var Logger *zap.Logger
 func NewLogger() {
 	Logger = zap.NewLogger()
 	var lumberjackLogger *lumberjack.Logger
-	if !common.Config.Debug {
-		accessLog := common.Config.AccessLog
+	if !Config.Debug {
+		accessLog := Config.AccessLog
 		if err := os.MkdirAll(filepath.Dir(accessLog), 0755); err != nil {
 			panic(err)
 		}
@@ -40,6 +39,6 @@ func NewLogger() {
 		writer = lumberjackLogger
 	}
 	Logger.SetOutput(writer)
-	Logger.SetLevel(hlog.Level(common.Config.LogLevel))
+	Logger.SetLevel(hlog.Level(Config.LogLevel))
 	hlog.SetLogger(Logger)
 }

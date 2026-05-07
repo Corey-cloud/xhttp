@@ -1,4 +1,4 @@
-package xhttp
+package main
 
 import (
 	"bytes"
