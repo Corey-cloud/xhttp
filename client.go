@@ -94,7 +94,6 @@ func (c *XClient) getConn() (*idleConn, error) {
 				c.mu.Unlock()
 				continue
 			}
-
 			return idle, nil
 
 		default:
