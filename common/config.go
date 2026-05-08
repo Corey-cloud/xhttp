@@ -24,6 +24,8 @@ type ServerConfig struct {
 	RecvPort    string `default:":9100"` //接收端口
 	SendEnabled bool   //发
 	RecvEnabled bool   //收
+	IdleTimeout int    //客户端空闲连接超时
+	RecvTimeout int    //服务端连接接收超时
 	PrintStat   bool   //打印状态
 	Debug       bool
 	LogLevel    int

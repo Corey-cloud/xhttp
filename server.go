@@ -11,6 +11,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/Corey-cloud/xhttp/common"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"io"
 	"net"
@@ -147,7 +148,8 @@ func (s *XServer) handleConn(conn net.Conn) {
 	remoteAddr := conn.RemoteAddr().String()
 	fmt.Printf("[XServer] 新连接: %s\n", remoteAddr)
 
-	ioTimeout := 2 * time.Second
+	//ioTimeout := 2 * time.Second
+	ioTimeout := time.Duration(common.Config.RecvTimeout) * time.Second
 
 	// 只在最后退出时关闭连接，避免中途关闭发 RST
 	defer func() {
@@ -194,15 +196,18 @@ func readWithTimeout(conn net.Conn, buf []byte, timeout time.Duration) error {
 	done := make(chan error, 1)
 
 	go func() {
-		// 完全不设置 SetReadDeadline！避免内核反向行为
 		_, err := io.ReadFull(conn, buf)
 		done <- err
 	}()
 
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
 	select {
 	case err := <-done:
 		return err
-	case <-time.After(timeout):
+
+	case <-timer.C:
 		return fmt.Errorf("timeout")
 	}
 }

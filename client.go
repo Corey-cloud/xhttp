@@ -95,15 +95,6 @@ func (c *XClient) getConn() (*idleConn, error) {
 				continue
 			}
 
-			// 健康检查
-			if !c.isConnAlive(idle.conn) {
-				_ = idle.conn.Close()
-				c.mu.Lock()
-				c.connNum--
-				c.mu.Unlock()
-				continue
-			}
-
 			return idle, nil
 
 		default:
@@ -133,26 +124,6 @@ NEW:
 		conn:     conn,
 		idleTime: time.Now(), // 新建连接也赋初值
 	}, nil
-}
-
-// 单向TCP专用：只发不收的连接健康检查
-func (c *XClient) isConnAlive(conn net.Conn) bool {
-	// 方法1：尝试获取底层文件描述符，判断是否已关闭
-	// 方法2：临时设置一个极短的 写超时，尝试空写
-	// 方法3：最简单稳定：直接检查连接是否已 close
-	// 下面这个是 100% 安全、不影响业务、不误判的版本
-
-	// 设置一个极短的 写超时，尝试探测底层连接状态
-	// 不会真的写出数据，只是探测TCP状态
-	err := conn.SetWriteDeadline(time.Now().Add(1 * time.Millisecond))
-	if err != nil {
-		return false
-	}
-	// 立即清空，不影响业务
-	_ = conn.SetWriteDeadline(time.Time{})
-
-	// 如果能成功设置，说明连接还在TCP栈中，未被内核回收
-	return true
 }
 
 func (c *XClient) dial() (net.Conn, error) {

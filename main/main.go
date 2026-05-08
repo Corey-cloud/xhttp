@@ -24,7 +24,7 @@ func main() {
 			Addr:         common.Config.ForwardAddr,
 			MaxOpenConns: 5000,
 			MaxIdleConns: 200,
-			IdleTimeout:  10 * time.Second,
+			IdleTimeout:  time.Duration(common.Config.IdleTimeout) * time.Second,
 			DialTimeout:  1 * time.Second,
 		})
 	}
