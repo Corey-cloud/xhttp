@@ -158,7 +158,7 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
-			// 每 5 秒执行一次
+			// 每 1 秒执行一次
 			count++
 			err := cli.Post("/demo/test", []byte("hello xhttp"))
 			if err != nil {
