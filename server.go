@@ -11,7 +11,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/Corey-cloud/xhttp/common"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"io"
 	"net"
@@ -49,6 +48,7 @@ func (r *XRouter) Dispatch(path string, body []byte) bool {
 	defer r.mu.RUnlock()
 	hd, ok := r.routerMap[path]
 	if !ok {
+		hlog.Errorf("[XHTTP] 未注册的 path: %s", path)
 		return false
 	}
 	// ========= 业务 panic 自动捕获，不炸服务 =========
@@ -148,21 +148,23 @@ func (s *XServer) handleConn(conn net.Conn) {
 	remoteAddr := conn.RemoteAddr().String()
 	fmt.Printf("[XServer] 新连接: %s\n", remoteAddr)
 
-	//ioTimeout := 2 * time.Second
-	ioTimeout := time.Duration(common.Config.RecvTimeout) * time.Second
+	// 长连接！！！去掉读超时，不要主动断开！！！
+	// ioTimeout := time.Duration(common.Config.RecvTimeout) * time.Second
 
-	// 只在最后退出时关闭连接，避免中途关闭发 RST
 	defer func() {
 		_ = conn.Close()
+		fmt.Printf("[XServer] 连接断开: %s\n", remoteAddr)
 	}()
 
+	// ==================== 正确做法：不超时，永久阻塞读 ====================
 	for {
-		// --------------------- 读 4 字节 header ---------------------
+		// 读 4 字节 header（永久阻塞，不超时）
 		header := make([]byte, 4)
-		err := readWithTimeout(conn, header, ioTimeout)
+		_, err := io.ReadFull(conn, header)
 		if err != nil {
-			hlog.Errorf("[XServer] read header timeout/err: %v, addr=%s", err, remoteAddr)
-			return // 超时直接退出，不发反向包
+			// 只有客户端断开/错误才退出，不要主动超时断开！
+			hlog.Errorf("[XServer] read header err: %v, addr=%s", err, remoteAddr)
+			return
 		}
 
 		size := binary.BigEndian.Uint32(header)
@@ -171,44 +173,23 @@ func (s *XServer) handleConn(conn net.Conn) {
 			return
 		}
 
-		// --------------------- 读 body ---------------------
+		// 读 body
 		body := make([]byte, size)
-		err = readWithTimeout(conn, body, ioTimeout)
+		_, err = io.ReadFull(conn, body)
 		if err != nil {
-			hlog.Errorf("[XServer] read body timeout/err: %v, addr=%s", err, remoteAddr)
+			hlog.Errorf("[XServer] read body err: %v, addr=%s", err, remoteAddr)
 			return
 		}
 
-		// --------------------- 解包 & 分发 ---------------------
-		pkg := append(header, body...)
-		path, data, err := DecodePkg(pkg)
+		// 解包
+		path, data, err := DecodePkg(append(header, body...))
 		if err != nil {
 			hlog.Errorf("[XServer] decode err: %v", err)
 			continue
 		}
 
+		// 同步/异步都行
 		go s.Router.Dispatch(path, data)
-	}
-}
-
-// readWithTimeout 核心：纯用户态超时，不触发 Windows 内核反向包
-func readWithTimeout(conn net.Conn, buf []byte, timeout time.Duration) error {
-	done := make(chan error, 1)
-
-	go func() {
-		_, err := io.ReadFull(conn, buf)
-		done <- err
-	}()
-
-	timer := time.NewTimer(timeout)
-	defer timer.Stop()
-
-	select {
-	case err := <-done:
-		return err
-
-	case <-timer.C:
-		return fmt.Errorf("timeout")
 	}
 }
 

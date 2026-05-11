@@ -4,7 +4,6 @@
   "sendEnabled": false,
   "recvEnabled": false,
   "idleTimeout": 10,
-  "recvTimeout": 2,
   "printStat": false,
   "debug": false,
   "logLevel": 5,
